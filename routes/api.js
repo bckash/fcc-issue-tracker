@@ -10,13 +10,23 @@ module.exports = function (app) {
     .get(function (req, res){
       let project = req.params.project;
 
-      // IssueArrayModel
-      //   .find({ name: project })
-      //   .then( result => {
-      //     console.log(result[0])
-      //     res.json(result[0])
-      //   })
+      IssueArrayModel
+        .find({ name: project })
+        .then( result => {
+          let issueArr = result[0].issues
+          let filters = req.query
 
+          const filteredIssue = issueArr.filter( issue => {
+            for (const key in filters) {
+              if (issue[key] !== filters[key]) {
+                return false;
+              }
+            }
+            return true
+          })
+
+          res.json(filteredIssue)
+        })
     })
     
     .post(function (req, res){
@@ -40,7 +50,7 @@ module.exports = function (app) {
         issues: newIssueObj
       }
 
-      if (newIssueObj.issue_title === "" || newIssueObj.issue_txt === "" || newIssueObj.created_by === "") {
+      if (newIssueObj.issue_title === "" || newIssueObj.issue_text === "" || newIssueObj.created_by === "") {
         res.json({ error: 'required field(s) missing' })
         return
 
@@ -55,7 +65,6 @@ module.exports = function (app) {
                 let issueArr = result[0]
                 issueArr.issues.push(newIssueObj)
                 issueArr.save() // <- mongoose somehow knows ive pushed to"issues" on my document, and "save()" becomes "updateOne()"
-                // console.log(result[0])
                 res.json(result[0])
             }
           })

@@ -7,6 +7,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="./css/bootstrap.min.css">
+    <link rel="stylesheet" href="/public/style.css">
   </head>
   <body>
     <header>
@@ -46,8 +47,6 @@
           {
             let issues= [];
             data.forEach(function(ele) {
-              console.log(ele);
-              console.log("hi")
               let openstatus;
               (ele.open) ? openstatus = 'open' : openstatus = 'closed';
               let single = [
@@ -67,8 +66,7 @@
               issues.push(single.join(''));
             });
             $('#issueDisplay').html(issues.join(''));
-          },
-          error: () => console.log("error")
+          }
         });
         
         $('#newIssue').submit(function(e){
