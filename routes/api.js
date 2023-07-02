@@ -42,8 +42,8 @@ module.exports = function (app) {
         issue_title: issue_title,
         issue_text: issue_text,
         created_by: created_by,
-        assigned_to: assigned_to,
-        status_text: status_text,
+        assigned_to: assigned_to || "",
+        status_text: status_text || "",
         created_on: currentDateTime,
         updated_on: currentDateTime,
         open: true
@@ -54,22 +54,31 @@ module.exports = function (app) {
         issues: newIssueObj
       }
 
-      if (newIssueObj.issue_title === "" || newIssueObj.issue_text === "" || newIssueObj.created_by === "") {
+      if (!issue_title  || !issue_text || !created_by ) {
         res.json({ error: 'required field(s) missing' })
         return
 
       } else {
         IssueArrayModel
-          .find({ name: project })
+          .findOne({ name: project })
           .then( result => {
-            if (result.length === 0) {
+            if (!result) {
                 let newIssueArray = new IssueArrayModel(newIssueArrayObj)
-                newIssueArray.save()
+                newIssueArray
+                  .save()
+                  .then( savedArr => {
+                    console.log(savedArr.issues[0])
+                    res.json(savedArr.issues[0])
+                  })
             } else {
-                let issueArr = result[0]
-                issueArr.issues.push(newIssueObj)
-                issueArr.save() // <- mongoose somehow knows ive pushed to"issues" on my document, and "save()" becomes "updateOne()"
-                res.json(result[0])
+                result.issues.push(newIssueObj)
+                result
+                  .save() // <- mongoose knows ive pushed to"issues" on my document, and "save()" becomes "updateOne()"
+                  .then( savedArr => {
+                    let last = savedArr.issues.length - 1
+                    console.log(savedArr.issues[last])
+                    res.json(savedArr.issues[last])
+                  })
             }
           })
       }
