@@ -13,19 +13,23 @@ module.exports = function (app) {
       IssueArrayModel
         .find({ name: project })
         .then( result => {
-          let issueArr = result[0].issues
-          let filters = req.query
 
-          const filteredIssue = issueArr.filter( issue => {
-            for (const key in filters) {
-              if (issue[key] !== filters[key]) {
-                return false;
+          if (result[0] !== undefined) {
+            let issueArr = result[0].issues
+            let filters = req.query
+
+            // if filters = {}, for loop is omiited
+            const filteredIssue = issueArr.filter( issue => {
+              for (const key in filters) {
+                if (issue[key] !== filters[key]) {
+                  return false;
+                }
               }
-            }
-            return true
-          })
+              return true
+            })
 
           res.json(filteredIssue)
+          }
         })
     })
     
