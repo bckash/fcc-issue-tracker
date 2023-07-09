@@ -3,7 +3,7 @@ const chai = require('chai');
 const assert = chai.assert;
 const server = require('../server');
 
-const currentDate = new Date()
+const IssueArrayModel = require("../model-schemas").IssueArray
 
 chai.use(chaiHttp);
 
@@ -26,6 +26,7 @@ suite('Functional Tests', function() {
                 })
                 .end(function(err, res){
                     assert.equal(res.body.issue_title, "test title");
+                    // all other fields the same way
                     done()
                 })
             })
@@ -65,8 +66,62 @@ suite('Functional Tests', function() {
             })
         })
 
-        suite("POST", function(){
-
+        suite("GET", function(){
+            test("View issues on a project", function(done){
+                chai
+                    .request(server)
+                    .keepOpen()
+                    .get("/api/issues/chai-test-get")
+                    .end(function(err, res){
+                        assert.equal(res.body.length, 3)
+                        assert.equal(res.body[0].issue_title, "bug")
+                        assert.equal(res.body[1].issue_title, "problem")
+                        done()
+                    })
+            })
+            test("View issues on a project with one filter", function(done){
+                chai
+                    .request(server)
+                    .keepOpen()
+                    .get("/api/issues/chai-test-get?issue_title=problem")
+                    .end(function(err, res){
+                        assert.equal(res.body.length, 1)
+                        assert.deepEqual(res.body[0], {
+                            "issue_title":"problem",
+                            "issue_text":"problem description ","created_by":"creator",
+                            "assigned_to":"",
+                            "status_text":"",
+                            "created_on":"2023-07-09T12:05:23.247Z","updated_on":"2023-07-09T12:05:23.247Z",
+                            "open":true,
+                            "_id":"64aaa283de3c3fe0485af966"})
+                        done()
+                    })
+            })
+            test("View issues on a project with multiple filters", function(done){
+                chai
+                    .request(server)
+                    .keepOpen()
+                    .get("/api/issues/chai-test-get?issue_title=bug&created_by=creator")
+                    .end(function(err, res){
+                        assert.equal(res.body.length, 2)
+                        assert.deepEqual(res.body, [
+                            {
+                                "issue_title":"bug",
+                                "issue_text":"bug description","created_by":"creator",
+                                "assigned_to":"",
+                                "status_text":"","created_on":"2023-07-09T12:04:44.102Z","updated_on":"2023-07-09T12:04:44.102Z","open":true,
+                                "_id":"64aaa25cde3c3fe0485af960"
+                            },
+                            {
+                                "issue_title":"bug",
+                                "issue_text":"bug description long","created_by":"creator",
+                                "assigned_to":"",
+                                "status_text":"","created_on":"2023-07-09T12:05:58.407Z","updated_on":"2023-07-09T12:05:58.407Z","open":true,
+                                "_id":"64aaa2a6de3c3fe0485af96e"
+                            }])
+                        done()
+                    })
+            })
         })
 
         suite("PUT", function(){

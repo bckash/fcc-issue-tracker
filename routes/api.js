@@ -1,6 +1,6 @@
 
 'use strict';
-const IssueModel = require("../model-schemas").Issue
+// const IssueModel = require("../model-schemas").Issue
 const IssueArrayModel = require("../model-schemas").IssueArray
 
 module.exports = function (app) {
@@ -13,7 +13,7 @@ module.exports = function (app) {
       IssueArrayModel
         .findOne({ name: project })
         .then( result => {
-          if (result !== undefined) {
+          if (result) {
             let issueArr = result.issues
             let filters = req.query
 
