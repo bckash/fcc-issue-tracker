@@ -101,7 +101,11 @@ suite('Functional Tests', function() {
                 chai
                     .request(server)
                     .keepOpen()
-                    .get("/api/issues/chai-test-get?issue_title=bug&created_by=creator")
+                    .get("/api/issues/chai-test-get")
+                    .query({
+                        issue_title: "bug",
+                        created_by: "creator"
+                    })
                     .end(function(err, res){
                         assert.equal(res.body.length, 2)
                         assert.deepEqual(res.body, [
@@ -125,7 +129,84 @@ suite('Functional Tests', function() {
         })
 
         suite("PUT", function(){
-
+            test("Update one field on an issue", function(done){
+                chai
+                    .request(server)
+                    .keepOpen()
+                    .put("/api/issues/chai-test-put")
+                    .send({
+                        _id: "64ac26cc9efa0a2e6aa748ff", 
+                        issue_title: "updated title" 
+                    })
+                    .end(function(err, res){
+                        assert.equal(res.body.result, "successfully updated")
+                        assert.equal(res.body._id, "64ac26cc9efa0a2e6aa748ff")
+                        done()
+                    })
+            })
+            test("Update multiple fields on an issue", function(done){
+                chai
+                    .request(server)
+                    .keepOpen()
+                    .put("/api/issues/chai-test-put")
+                    .send({
+                        _id: "64ac26cc9efa0a2e6aa748ff", 
+                        issue_title: "new title",
+                        issue_text: "updated text",
+                        assigned_to: "someone else"
+                    })
+                    .end(function(err, res){
+                        assert.equal(res.body.result, "successfully updated")
+                        assert.equal(res.body._id, "64ac26cc9efa0a2e6aa748ff")
+                        done()
+                    })
+            })
+            test("Update an issue with missing _id", function(done){
+                chai
+                    .request(server)
+                    .keepOpen()
+                    .put("/api/issues/chai-test-put")
+                    .send({
+                        issue_title: "new title",
+                        issue_text: "updated text",
+                        assigned_to: "someone else"
+                    })
+                    .end(function(err, res){
+                        assert.equal(res.body.error, "missing _id")
+                        done()
+                    })
+            })
+            test("Update an issue with no fields to update", function(done){
+                chai
+                    .request(server)
+                    .keepOpen()
+                    .put("/api/issues/chai-test-put")
+                    .send({
+                        _id: "64ac26cc9efa0a2e6aa748ff"
+                    })
+                    .end(function(err, res){
+                        assert.equal(res.body.error, "no update field(s) sent")
+                        assert.equal(res.body._id, "64ac26cc9efa0a2e6aa748ff")
+                        done()
+                    })
+            })
+            test("Update an issue with an invalid _id", function(done){
+                chai
+                    .request(server)
+                    .keepOpen()
+                    .put("/api/issues/chai-test-put")
+                    .send({
+                        _id: "64ac26cc9efa0a2e6aa74666",
+                        issue_title: "new title",
+                        issue_text: "updated text",
+                        assigned_to: "someone else"
+                    })
+                    .end(function(err, res){
+                        assert.equal(res.body.error, "could not update")
+                        assert.equal(res.body._id, "64ac26cc9efa0a2e6aa74666")
+                        done()
+                    })
+            })
         })
 
         suite("DELETE", function(){
