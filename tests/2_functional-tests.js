@@ -3,7 +3,7 @@ const chai = require('chai');
 const assert = chai.assert;
 const server = require('../server');
 
-const IssueArrayModel = require("../model-schemas").IssueArray
+let deleteID;
 
 chai.use(chaiHttp);
 
@@ -27,6 +27,7 @@ suite('Functional Tests', function() {
                 .end(function(err, res){
                     assert.equal(res.body.issue_title, "test title");
                     // all other fields the same way
+                    deleteID = res.body._id
                     done()
                 })
             })
@@ -210,7 +211,43 @@ suite('Functional Tests', function() {
         })
 
         suite("DELETE", function(){
-
+            test("Delete an issue", function(done){
+                chai
+                    .request(server)
+                    .keepOpen()
+                    .delete("/api/issues/test")
+                    .send({
+                        _id: deleteID,
+                    })
+                    .end(function(err, res){
+                        assert.equal(res.body.result, "successfully deleted")
+                        done()
+                    })
+            })
+            test("Delete an issue with an invalid _id", function(done){
+                chai
+                    .request(server)
+                    .keepOpen()
+                    .delete("/api/issues/test")
+                    .send({
+                        _id: deleteID,
+                    })
+                    .end(function(err, res){
+                        assert.equal(res.body.error, "could not delete")
+                        done()
+                    })
+            })
+            test("Delete an issue with missing _id", function(done){
+                chai
+                    .request(server)
+                    .keepOpen()
+                    .delete("/api/issues/test")
+                    .send({ })
+                    .end(function(err, res){
+                        assert.equal(res.body.error, "missing _id")
+                        done()
+                    })
+            })
         })
     })
 });
